@@ -1,15 +1,21 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from fastapi_utils.guid_type import GUID, GUID_DEFAULT_SQLITE
+
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, TIMESTAMP
 from sqlalchemy.orm import relationship
+from sqlalchemy.sql import func
 
 from core.database import Base
 
 
 class Post(Base):
-    __tablename__ = "items"
-
-    id = Column(Integer, primary_key=True)
-    content = Column(String, index=True)
-    published = Column(Boolean, default=True)
-    ratings = Column(Integer, ForeignKey("users.id"))
-
-    owner = relationship("User", back_populates="items")
+    __tablename__ = "posts"
+    
+    id = Column(GUID, primary_key=True, default=GUID_DEFAULT_SQLITE)
+    title = Column(String, nullable=False)
+    content = Column(String, nullable=False)
+    category = Column(String, nullable=True)
+    published = Column(Boolean, nullable=False, default=True)
+    created_at = Column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=func.now()
+    )
+    updated_at = Column(TIMESTAMP(timezone=True), default=None, onupdate=func.now())
