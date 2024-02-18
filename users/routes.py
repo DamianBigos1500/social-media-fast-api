@@ -1,7 +1,13 @@
 from fastapi import APIRouter, status, Depends, Request
+from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
-from core.database import get_db
+
+from sqlalchemy.orm import Session
+
 from users.schemas import CreateUserRequest
+from users.models import Profile, User
+
+from core.database import get_db
 from core.security import oauth2_scheme
 
 router = APIRouter(
@@ -10,19 +16,30 @@ router = APIRouter(
     responses={404: {"description": "Not found"}},
 )
 
-# user_router = APIRouter(
-#     prefix="/users",
-#     tags=["Users"],
-#     responses={404: {"description": "Not found"}},
-#     dependencies=[Depends(oauth2_scheme)],
-# )
 
+@router.post("/", status_code=status.HTTP_201_CREATED)
+def create_post(payload: CreateUserRequest, db: Session = Depends(get_db)):
+    user = User(
+        first_name=payload.first_name,
+        last_name=payload.last_name,
+        email=payload.email,
+        password=payload.password,
+    )
+    db.add(user)
+    db.commit()
+    db.refresh(user)
 
-@router.post("")
-async def create_user():
-    return JSONResponse(content={"status": "Running!"})
+    profile = Profile(
+        user_id=user.id,
+    )
+    db.add(profile)
+    db.commit()
+    db.refresh(profile)
 
-
-@router.post("/me")
-def get_user_detail():
-    return JSONResponse(content={"status": "Running!"})
+    return JSONResponse(
+        {
+            "message": "success",
+            "user": jsonable_encoder(user),
+            "profile": jsonable_encoder(profile),
+        }
+    )
