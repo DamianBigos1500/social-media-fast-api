@@ -1,5 +1,3 @@
-from fastapi_utils.guid_type import GUID, GUID_DEFAULT_SQLITE
-
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, TIMESTAMP, Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func

@@ -1,11 +1,19 @@
-from fastapi_utils.guid_type import GUID, GUID_DEFAULT_SQLITE
-
-from sqlalchemy import Boolean, Column, Integer, String, DateTime, func, event, ForeignKey
+from datetime import datetime
+from typing import Optional
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    Integer,
+    ForeignKey,
+    String,
+    func,
+)
 from sqlalchemy.orm import relationship
 
-from datetime import datetime
-
 from core.database import Base, get_db
+from sqlmodel import SQLModel, Field
+
 
 
 class User(Base):
@@ -25,11 +33,12 @@ class User(Base):
 
     profile = relationship("Profile", uselist=False, back_populates="user", cascade="all, delete-orphan")
 
+
 class Profile(Base):
-    __tablename__ = 'profiles'
+    __tablename__ = "profiles"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey('users.id'))
+    user_id = Column(Integer, ForeignKey("users.id"))
     user = relationship("User", back_populates="profile")
 
     participants = relationship(

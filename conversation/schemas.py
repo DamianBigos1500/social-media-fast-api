@@ -1,5 +1,3 @@
-from fastapi_utils.guid_type import GUID
-
 from typing import Optional, List
 from pydantic import BaseModel
 from datetime import datetime

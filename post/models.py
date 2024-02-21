@@ -1,5 +1,3 @@
-from fastapi_utils.guid_type import GUID, GUID_DEFAULT_SQLITE
-
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, TIMESTAMP
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
@@ -9,8 +7,8 @@ from core.database import Base
 
 class Post(Base):
     __tablename__ = "posts"
-    
-    id = Column(GUID, primary_key=True, default=GUID_DEFAULT_SQLITE)
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
     title = Column(String, nullable=False)
     content = Column(String, nullable=False)
     category = Column(String, nullable=True)
