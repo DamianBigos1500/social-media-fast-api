@@ -7,8 +7,8 @@ from sqlalchemy.orm import Session
 from users.schemas import CreateUserRequest
 from users.models import Profile, User
 
+from core.security import hash_password
 from core.database import get_db
-from core.security import oauth2_scheme
 
 router = APIRouter(
     prefix="/users",
@@ -23,7 +23,7 @@ def create_post(payload: CreateUserRequest, db: Session = Depends(get_db)):
         first_name=payload.first_name,
         last_name=payload.last_name,
         email=payload.email,
-        password=payload.password,
+        password=hash_password(payload.password),
     )
     db.add(user)
     db.commit()
