@@ -3,7 +3,7 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.responses import JSONResponse
 from sqlalchemy import func
 
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session
 
 from core.database import get_db
 

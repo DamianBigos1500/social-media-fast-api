@@ -1,10 +1,7 @@
-from fastapi import APIRouter, Depends, status
-from fastapi.responses import JSONResponse
 from fastapi_utils.guid_type import GUID
 
 from sqlalchemy.orm import Session
 
-from users.models import User
 from conversation.models import Conversation, Message, Participant
 from conversation.schemas import CreateConversationSchema, SendMessageSchema
 
