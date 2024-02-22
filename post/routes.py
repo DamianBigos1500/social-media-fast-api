@@ -1,12 +1,17 @@
-from fastapi import APIRouter, Depends, status
+import os
+from random import randint
+from fastapi import APIRouter, Depends, File, UploadFile, status
 from fastapi.encoders import jsonable_encoder
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 
 from sqlalchemy.orm import Session
 
 from core.database import get_db
 from post.schemas import PostBaseSchema, ListPostResponse
 from post.models import Post
+import uuid
+
+IMAGEDIR = "uploads/"
 
 router = APIRouter(
     prefix="/posts",
@@ -28,7 +33,7 @@ def get_posts(
         .offset(skip)
         .all()
     )
-    
+
     return JSONResponse(
         content={"status": "success", "notes": jsonable_encoder(notes)},
     )
@@ -47,3 +52,27 @@ def create_post(payload: PostBaseSchema, db: Session = Depends(get_db)):
     db.merge(new_note)
     db.commit()
     return {"status": "success", "note": payload}
+
+
+@router.post("/uploadfile/")
+async def create_upload_file(file: UploadFile = File(...)):
+
+    file.filename = f"{uuid.uuid4()}.jpg"
+    contents = await file.read()
+
+    # save file
+    with open(f"{IMAGEDIR}{file.filename}", "wb") as f:
+        f.write(contents)
+
+    return {"filename": file.filename}
+
+
+@router.post("/show/")
+async def read_file():
+
+    # get random file from the image directory
+    files = os.listdir(IMAGEDIR)
+    random_index = randint(0, len(files) - 1)
+
+    path = f"{IMAGEDIR}{files[random_index]}"
+    return FileResponse(path)

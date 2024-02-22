@@ -1,5 +1,3 @@
-from fastapi_utils.guid_type import GUID
-
 from sqlalchemy.orm import Session
 
 from conversation.models import Conversation, Message, Participant
@@ -43,7 +41,7 @@ def store_participants(db: Session, conversation_id, user_ids):
     db.commit()
 
 
-def store_message(db: Session, creator_id: GUID, payload):
+def store_message(db: Session, creator_id: str, payload):
     message = Message(
         content=payload.content,
         participant_id=creator_id,
