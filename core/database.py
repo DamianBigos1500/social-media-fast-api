@@ -3,10 +3,10 @@ from sqlalchemy.orm import sessionmaker, declarative_base
 from typing import Generator
 from core.config import get_settings
 
-SQLALCHEMY_DATABASE_URL = "sqlite:///./sql_app.db"
+env = get_settings()
 
 engine = create_engine(
-    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+    env.SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
 )
 
 SessionLocal = sessionmaker(

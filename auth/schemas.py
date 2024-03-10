@@ -12,8 +12,6 @@ class UserLevel(str, Enum):
 class UserBase(BaseModel):
     email: str
     username: str
-    age: Optional[int] = None
-    level: UserLevel = UserLevel.beginner
 
 
 class UserIn(UserBase):

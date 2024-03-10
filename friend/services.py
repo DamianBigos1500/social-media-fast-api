@@ -2,15 +2,15 @@ from sqlmodel import Session
 from friend.models import FriendAssociation
 
 
-def get_friend_list(db: Session, user):
+def get_friend_list(db: Session, user_id):
     requested_friends = (
         db.query(FriendAssociation.user_id)
-        .filter(FriendAssociation.friend_id == user.id)
+        .filter(FriendAssociation.friend_id == user_id)
         .filter(FriendAssociation.status == 0)
     )
     received_friends = (
         db.query(FriendAssociation.friend_id)
-        .filter(FriendAssociation.user_id == user.id)
+        .filter(FriendAssociation.user_id == user_id)
         .filter(FriendAssociation.status == 0)
     )
 

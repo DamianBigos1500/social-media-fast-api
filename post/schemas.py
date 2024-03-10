@@ -1,24 +1,37 @@
-from typing import Optional, List
+import datetime
+from typing import List
 from pydantic import BaseModel
-from datetime import datetime
+from users.schemas import GetUser
 
 
-class PostBaseSchema(BaseModel):
-    id: str | None = None
-    title: str
+class PostBase(BaseModel):
+    id: int
     content: str
-    category: str | None = None
-    published: bool = False
-    createdAt: datetime | None = None
-    updatedAt: datetime | None = None
-
-    class Config:
-        from_attributes = True
-        populate_by_name = True
-        arbitrary_types_allowed = True
-
-
-class ListPostResponse(BaseModel):
     status: str
-    results: int
-    posts: List[PostBaseSchema]
+
+
+class PostAttachmentBase(BaseModel):
+    id: int
+    path: str
+    post_id: int
+
+
+class CommentUser(GetUser):
+    pass
+
+
+class PostCommentBase(BaseModel):
+    content: str
+    user: CommentUser
+
+
+class GetPost(PostBase):
+    attachments: List[PostAttachmentBase]
+    comments: List[PostCommentBase]
+    creator: GetUser
+    created_at: datetime.datetime
+
+
+class CreateComment(BaseModel):
+    post_id: int
+    content: str
