@@ -9,7 +9,6 @@ from conversation.routes import router as conversation_router
 
 router = APIRouter(
     prefix="/api",
-    tags=["API"],
     responses={404: {"description": "Not found"}},
 )
 

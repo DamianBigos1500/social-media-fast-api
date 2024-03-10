@@ -1,24 +1,21 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-
-from datetime import timedelta, datetime, timezone
-from typing import Annotated, Optional
+from fastapi import  Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from pydantic import BaseModel
+
+from datetime import timedelta, datetime
+from typing import Annotated, Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 
 from core.database import get_db
+from core.config import get_settings
 from auth.schemas import TokenData
 from users.service import get_user
 
-SECRET_KEY = "09d25e094faa6ca2556c818166b7a9563b93f7099f6f0f4caa6cf63b88e8d3e7"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
+
+env = get_settings()
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/token")
 
 
 def hash_password(password: str):
@@ -36,7 +33,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     else:
         expire = datetime.utcnow() + timedelta(minutes=15)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, env.SECRET_KEY, algorithm=env.ALGORITHM)
     return encoded_jwt
 
 
@@ -50,7 +47,7 @@ async def get_current_user(
     )
 
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        payload = jwt.decode(token, env.SECRET_KEY, algorithms=[env.ALGORITHM])
         email: str = payload.get("sub")
         if email is None:
             raise credentials_exception

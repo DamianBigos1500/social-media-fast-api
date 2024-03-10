@@ -1,15 +1,21 @@
-import os
-from random import randint
-from fastapi import APIRouter, Depends, File, UploadFile, status
-from fastapi.encoders import jsonable_encoder
-from fastapi.responses import FileResponse, JSONResponse
+from typing import Annotated, List
+from fastapi import APIRouter, Depends, File, Form, UploadFile, status
 
 from sqlalchemy.orm import Session
 
+from core.security import get_current_user
 from core.database import get_db
-from post.schemas import PostBaseSchema, ListPostResponse
+
+from post.schemas import CreateComment, GetPost
 from post.models import Post
-import uuid
+from post.services import (
+    create_new_post,
+    upload_post_attachments,
+    get_post_by_id,
+    create_post_comment,
+    delete_post_comment_by_id,
+)
+
 
 IMAGEDIR = "uploads/"
 
@@ -20,59 +26,61 @@ router = APIRouter(
 )
 
 
-@router.get("/")
+@router.get("/", response_model=List[GetPost])
 def get_posts(
-    db: Session = Depends(get_db), limit: int = 10, page: int = 1, search: str = ""
+    db: Session = Depends(get_db),
 ):
-    skip = (page - 1) * limit
-
-    notes = (
-        db.query(Post)
-        .filter(Post.title.contains(search))
-        .limit(limit)
-        .offset(skip)
-        .all()
-    )
-
-    return JSONResponse(
-        content={"status": "success", "notes": jsonable_encoder(notes)},
-    )
+    posts = db.query(Post).all()
+    for post in posts:
+        post.comments = post.comments[:2]
+    return posts
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def create_post(payload: PostBaseSchema, db: Session = Depends(get_db)):
-    new_note = Post(
-        title=payload.title,
-        content=payload.content,
-        category=payload.category,
-        published=payload.published,
-        created_at=payload.createdAt,
-        updated_at=payload.updatedAt,
-    )
-    db.merge(new_note)
-    db.commit()
-    return {"status": "success", "note": payload}
+async def create_post(
+    content: Annotated[str, Form()],
+    files: List[UploadFile] = File(None),
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    post = create_new_post(db, content, user.id)
+    await upload_post_attachments(db, post.id, files)
+    return {"status": "success", "posts": files}
 
 
-@router.post("/uploadfile/")
-async def create_upload_file(file: UploadFile = File(...)):
-
-    file.filename = f"{uuid.uuid4()}.jpg"
-    contents = await file.read()
-
-    # save file
-    with open(f"{IMAGEDIR}{file.filename}", "wb") as f:
-        f.write(contents)
-
-    return {"filename": file.filename}
+@router.get("/{pid}/", status_code=status.HTTP_200_OK, response_model=GetPost)
+def show_post(
+    pid: str,
+    db: Session = Depends(get_db),
+):
+    post = get_post_by_id(db, pid)
+    return post
 
 
-@router.post("/show/")
-async def read_file():
+@router.post("/comment/{pid}/", status_code=status.HTTP_200_OK)
+def show_post(
+    payload: CreateComment,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    post = create_post_comment(db, payload, user.id)
+    return post
 
-    # get random file from the image directory
-    files = os.listdir(IMAGEDIR)
-    random_index = randint(0, len(files) - 1)
 
-    path = f"{IMAGEDIR}{files[random_index]}"
-    return FileResponse(path)
+@router.delete("/comment/{pid}/", status_code=status.HTTP_200_OK)
+def show_post(
+    pid: str,
+    db: Session = Depends(get_db),
+):
+    post = delete_post_comment_by_id(db, pid)
+    return post
+
+
+# @router.post("/show/")
+# async def read_file():
+
+#     files = os.listdir(IMAGEDIR)
+#     random_index = randint(0, len(files) - 1)
+
+#     path = f"{IMAGEDIR}{files[random_index]}"
+#     return FileResponse(path)
