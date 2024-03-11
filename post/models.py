@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, TIMESTAMP
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, TIMESTAMP, Table
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 
@@ -43,3 +43,8 @@ class PostComment(Base):
     
     post = relationship("Post", back_populates="comments")
     user = relationship("User", back_populates="comments")
+
+user_bookmarks_association = Table('user_bookmarks_association', Base.metadata,
+    Column('user_id', Integer, ForeignKey('users.id')),
+    Column('post_id', Integer, ForeignKey('posts.id'))
+)

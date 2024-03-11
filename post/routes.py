@@ -6,6 +6,8 @@ from sqlalchemy.orm import Session
 from core.security import get_current_user
 from core.database import get_db
 
+from users.models import User
+
 from post.schemas import CreateComment, GetPost
 from post.models import Post
 from post.services import (
@@ -71,16 +73,45 @@ def show_post(
 def show_post(
     pid: str,
     db: Session = Depends(get_db),
+    user=Depends(get_current_user),
 ):
     post = delete_post_comment_by_id(db, pid)
     return post
 
 
-# @router.post("/show/")
-# async def read_file():
+@router.get("/bookmarks/", status_code=status.HTTP_200_OK)
+def all_bookmark(
+    user=Depends(get_current_user),
+):
 
-#     files = os.listdir(IMAGEDIR)
-#     random_index = randint(0, len(files) - 1)
+    return "user.bookmarks"
 
-#     path = f"{IMAGEDIR}{files[random_index]}"
-#     return FileResponse(path)
+
+@router.post("/bookmarks/{pid}/", status_code=status.HTTP_200_OK)
+def add_bookmark(
+    pid: str,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    post = db.query(Post).filter(Post.id == pid).first()
+
+    if (post is not None) and (post not in user.bookmarks):
+        user.bookmarks.append(post)
+        db.add(user)
+        db.commit()
+    return user.bookmarks
+
+
+@router.delete("/bookmarks/{pid}/", status_code=status.HTTP_200_OK)
+def remove_bookmark(
+    pid: str,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    post = db.query(Post).filter(Post.id == pid).first()
+
+    if post in user.bookmarks:
+        user.bookmarks.remove(post)
+        db.add(user)
+        db.commit()
+    return user.bookmarks

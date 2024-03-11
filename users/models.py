@@ -5,7 +5,6 @@ from sqlalchemy import (
     String,
     DateTime,
     func,
-    event,
     ForeignKey,
 )
 from sqlalchemy.orm import relationship, Mapped
@@ -15,6 +14,8 @@ from datetime import datetime
 
 from core.database import Base
 from core.config import get_settings
+
+from post.models import user_bookmarks_association
 
 env = get_settings()
 
@@ -61,6 +62,8 @@ class User(Base):
     desired_friends = association_proxy('requested_rels', 'receiving_user')
 
     comments = relationship("PostComment", back_populates="user")
+
+    bookmarks = relationship('Post', secondary=user_bookmarks_association)
 
 class Profile(Base):
     __tablename__ = "profiles"
