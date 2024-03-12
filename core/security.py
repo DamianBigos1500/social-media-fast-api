@@ -9,7 +9,7 @@ from passlib.context import CryptContext
 from core.database import get_db
 from core.config import get_settings
 from auth.schemas import TokenData
-from users.service import get_user
+from users.services import get_user
 
 
 env = get_settings()

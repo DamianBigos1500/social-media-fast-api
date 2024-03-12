@@ -18,8 +18,10 @@ class Post(Base):
     created_at = Column(
         TIMESTAMP(timezone=True), nullable=False, server_default=func.now()
     )
-    updated_at = Column(TIMESTAMP(timezone=True), default=None, onupdate=func.now())
-    
+    updated_at = Column(
+        TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
     attachments = relationship("PostAttachment", back_populates="post")
     comments = relationship("PostComment", back_populates="post")
 
@@ -29,22 +31,40 @@ class PostAttachment(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     path = Column(String)
-    post_id = Column(Integer, ForeignKey("posts.id"), nullable=False)
-    
+    post_id = Column(
+        Integer, ForeignKey("posts.id", ondelete="SET NULL"), nullable=True
+    )
+
     post = relationship("Post", back_populates="attachments")
+    created_at = Column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=func.now()
+    )
+    updated_at = Column(
+        TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
 
 class PostComment(Base):
     __tablename__ = "post_comment"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)  
+    id = Column(Integer, primary_key=True, autoincrement=True)
     content = Column(String, nullable=False)
-    post_id = Column(Integer, ForeignKey("posts.id"), nullable=False)
+    post_id = Column(Integer, ForeignKey("posts.id", ondelete="CASCADE"), nullable=True)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
-    
+
     post = relationship("Post", back_populates="comments")
     user = relationship("User", back_populates="comments")
+    created_at = Column(
+        TIMESTAMP(timezone=True), nullable=False, server_default=func.now()
+    )
+    updated_at = Column(
+        TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
 
-user_bookmarks_association = Table('user_bookmarks_association', Base.metadata,
-    Column('user_id', Integer, ForeignKey('users.id')),
-    Column('post_id', Integer, ForeignKey('posts.id'))
+
+user_bookmarks_association = Table(
+    "user_bookmarks_association",
+    Base.metadata,
+    Column("user_id", Integer, ForeignKey("users.id")),
+    Column("post_id", Integer, ForeignKey("posts.id")),
 )

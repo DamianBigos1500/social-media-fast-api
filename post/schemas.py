@@ -21,6 +21,7 @@ class CommentUser(GetUser):
 
 
 class PostCommentBase(BaseModel):
+    id: int
     content: str
     user: CommentUser
 
@@ -30,6 +31,7 @@ class GetPost(PostBase):
     comments: List[PostCommentBase]
     creator: GetUser
     created_at: datetime.datetime
+    comments_length: int | None = None
 
 
 class CreateComment(BaseModel):

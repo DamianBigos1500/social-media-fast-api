@@ -9,8 +9,12 @@ from post.models import Post, PostAttachment, PostComment
 from post.schemas import CreateComment
 
 
-def get_posts(db: Session):
-    return db.query(Post).order_by(desc(Post.created_at)).all()
+def get_all_posts(db: Session):
+    return (
+        db.query(Post)
+        .order_by(desc(Post.id))
+        .all()
+    )
 
 
 def create_new_post(db: Session, content: str, creator_id: int):
@@ -23,6 +27,13 @@ def create_new_post(db: Session, content: str, creator_id: int):
 
 def get_post_by_id(db: Session, pid: str):
     post = db.query(Post).filter(Post.id == pid).first()
+    return post
+
+
+def delete_post_by_id(db: Session, pid: str, userId):
+    post = db.query(Post).filter((Post.id == pid) & (Post.creator_id == userId)).first()
+    db.delete(post)
+    db.commit()
     return post
 
 
@@ -71,5 +82,22 @@ def create_post_comment(db: Session, payload: CreateComment, user_id):
     return comment
 
 
-def delete_post_comment_by_id():
-    pass
+def delete_post_comment_by_id(db: Session, cid, userId):
+    post_comment = (
+        db.query(PostComment)
+        .filter((PostComment.id == cid) & (PostComment.user_id == userId))
+        .first()
+    )
+    db.delete(post_comment)
+    db.commit()
+    return post_comment
+
+
+def add_bookmark_user(db: Session, pid, user):
+    post = db.query(Post).filter(Post.id == pid).first()
+    if (post is not None) and (post not in user.bookmarks):
+        user.bookmarks.append(post)
+        db.add(user)
+        db.commit()
+
+    return user
