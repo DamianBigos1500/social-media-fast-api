@@ -10,15 +10,12 @@ from post.schemas import CreateComment
 
 
 def get_all_posts(db: Session):
-    return (
-        db.query(Post)
-        .order_by(desc(Post.id))
-        .all()
-    )
+    return db.query(Post).order_by(desc(Post.id)).all()
 
 
-def create_new_post(db: Session, content: str, creator_id: int):
+def create_new_post(db: Session, content: str | None, creator_id: int):
     new_post = Post(content=content, creator_id=creator_id)
+
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
@@ -69,6 +66,16 @@ def create_attachment(db: Session, path, post_id):
     db.refresh(attachment)
 
     return attachment
+
+
+def get_comments_by_post_id(db: Session, post_id):
+    post_comments = (
+        db.query(PostComment)
+        .filter(PostComment.post_id == post_id)
+        .order_by(desc(PostComment.created_at))
+        .all()
+    )
+    return post_comments
 
 
 def create_post_comment(db: Session, payload: CreateComment, user_id):

@@ -6,7 +6,7 @@ from users.schemas import GetUser
 
 class PostBase(BaseModel):
     id: int
-    content: str
+    content: str | None
     status: str
 
 
@@ -22,13 +22,13 @@ class CommentUser(GetUser):
 
 class PostCommentBase(BaseModel):
     id: int
+    post_id: int | None
     content: str
     user: CommentUser
 
 
 class GetPost(PostBase):
     attachments: List[PostAttachmentBase]
-    comments: List[PostCommentBase]
     creator: GetUser
     created_at: datetime.datetime
     comments_length: int | None = None

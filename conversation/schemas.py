@@ -1,8 +1,6 @@
-from datetime import timedelta
-import datetime
 from typing import List, Optional
 from pydantic import BaseModel
-from users.schemas import UserBase
+from users.schemas import GetUser, UserBase
 
 
 class ConversationBase(BaseModel):
@@ -45,19 +43,13 @@ class SendMessageSchema(BaseModel):
     cid: str | None
 
 
-class UserFullName(BaseModel):
-    id: int
-    first_name: str
-    last_name: str
-
-
 class UserParticipantMessage(BaseModel):
     id: int
 
 
 class ParticipantBase(BaseModel):
     id: int
-    user: UserFullName
+    user: GetUser
 
 
 class ParticipantMessage(BaseModel):
@@ -68,6 +60,13 @@ class ParticipantMessage(BaseModel):
 
 class ManyMessages(LastMessageBase):
     participant: ParticipantMessage
+
+
+class AllConversations(ConversationBase):
+    last_message: Optional[ManyMessages] = None
+    creator: UserBase
+    participants: List[ParticipantBase]
+
 
 
 class GetConversations(ConversationBase):

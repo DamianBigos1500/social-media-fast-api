@@ -9,7 +9,7 @@ class Post(Base):
     __tablename__ = "posts"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    content = Column(String, nullable=False)
+    content = Column(String, nullable=True)
     status = Column(String, default="PUBLISHED")
 
     creator_id = Column(Integer, ForeignKey("users.id"), nullable=False)
