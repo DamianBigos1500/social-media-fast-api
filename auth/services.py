@@ -6,6 +6,7 @@ from users.schemas import UserCreate
 
 from core.security import verify_password
 
+
 def authenticate_user(db: Session, email: str, password: str):
     user = db.query(User).filter_by(email=email).first()
     return user
@@ -16,7 +17,7 @@ def authenticate_user(db: Session, email: str, password: str):
     return user
 
 
-def create_user_account(db:Session , payload: UserCreate):
+def create_user_account(db: Session, payload: UserCreate):
     new_user = User(
         first_name=payload.first_name,
         last_name=payload.last_name,
@@ -28,11 +29,3 @@ def create_user_account(db:Session , payload: UserCreate):
     db.refresh(new_user)
     return new_user
 
-def store_profile(db:Session , userId: User):
-    profile = Profile(
-        user_id=userId,
-    )
-    db.add(profile)
-    db.commit()
-    db.refresh(profile)
-    return profile

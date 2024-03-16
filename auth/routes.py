@@ -8,10 +8,11 @@ from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 from auth.schemas import Token
-from auth.services import authenticate_user, create_user_account, store_profile
+from auth.services import authenticate_user, create_user_account
 
-from users.schemas import  UserCreate, GetUser
-from users.models import  User
+from users.services import store_profile
+from users.schemas import UserCreate, GetUser
+from users.models import User
 
 from core.config import get_settings
 from core.database import get_db
@@ -26,6 +27,7 @@ router = APIRouter(
     tags=["Auth"],
     responses={404: {"description": "Not found"}},
 )
+
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 def create_post(payload: UserCreate, db: Session = Depends(get_db)):

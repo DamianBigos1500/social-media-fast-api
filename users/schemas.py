@@ -5,7 +5,12 @@ class ProfileBase(BaseModel):
     id: int
 
 
-class GetProfile(ProfileBase):
+class UserProfile(ProfileBase):
+    phone_number: str | None
+    gender: str | None
+    birth_day: int | None
+    birth_month: int | None
+    birth_year: int | None
     cover_image: str
 
 
@@ -24,12 +29,11 @@ class GetUser(UserBase):
     profile_image: str
 
 
-
 class UserList(UserBase):
     id: int
     profile_image: str
-    profile: GetProfile
+    profile: UserProfile
 
 
 class UserProfile(GetUser):
-    profile: GetProfile
+    profile: UserProfile

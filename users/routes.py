@@ -5,9 +5,9 @@ from fastapi import APIRouter, UploadFile, status, Depends
 from sqlalchemy.orm import Session
 
 from users.schemas import UserList, UserProfile
-from users.models import  User
+from users.models import User, ProfileConstrains
 
-from core.security import get_current_user, hash_password
+from core.security import get_current_user
 from core.database import get_db
 from core.config import get_settings
 import os
@@ -27,7 +27,9 @@ def friends_proposal(db: Session = Depends(get_db)):
     return users
 
 
-@router.get("/{uid}", status_code=status.HTTP_200_OK, response_model=UserProfile)
+@router.get(
+    "/profile/{uid}", status_code=status.HTTP_200_OK, response_model=UserProfile
+)
 def get_user_profile(uid: int, db: Session = Depends(get_db)):
     user = db.query(User).filter_by(id=uid).first()
     return user
@@ -56,3 +58,18 @@ async def update_profile_image(
     db.commit()
 
     return upload_file
+
+
+@router.patch("/profile/{uid}", status_code=status.HTTP_200_OK,response_model=UserProfile)
+def get_user_profile(
+    uid: int,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    profile_data = db.query(User).filter_by(id=uid).first()
+    constrains = db.query(ProfileConstrains).filter_by(user_id=uid).first()
+
+    if not constrains.show_birth_day:
+        profile_data.profile.birth_day = None
+    
+    return profile_data

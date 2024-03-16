@@ -11,6 +11,7 @@ from core.security import get_current_user
 
 from conversation.models import Conversation, Participant
 from conversation.schemas import (
+    AllConversations,
     CreateConversationSchema,
     GetConversations,
     NewConversationSchema,
@@ -36,7 +37,7 @@ router = APIRouter(
 )
 
 
-@router.get("/", response_model=List[GetConversations])
+@router.get("/", response_model=List[AllConversations])
 def get_conversations(db: Session = Depends(get_db), user=Depends(get_current_user)):
     conversations = get_user_conversations(db, user.id)
     return conversations
