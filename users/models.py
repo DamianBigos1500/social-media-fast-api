@@ -4,6 +4,8 @@ from sqlalchemy import (
     Integer,
     String,
     DateTime,
+    asc,
+    desc,
     func,
     ForeignKey,
 )
@@ -43,7 +45,10 @@ class User(Base):
         "Profile", uselist=False, back_populates="user", cascade="all, delete-orphan"
     )
     profile_constrains = relationship(
-        "ProfileConstrains", uselist=False, back_populates="user", cascade="all, delete-orphan"
+        "ProfileConstrains",
+        uselist=False,
+        back_populates="user",
+        cascade="all, delete-orphan",
     )
 
     posts = relationship("Post", back_populates="creator")
@@ -69,8 +74,10 @@ class User(Base):
 
     comments = relationship("PostComment", back_populates="user")
 
-    bookmarks = relationship("Post", secondary=user_bookmarks_association)
-    
+    bookmarks = relationship(
+        "Post", secondary=user_bookmarks_association, order_by=asc("user_id")
+    )
+
 
 class Profile(Base):
     __tablename__ = "profiles"

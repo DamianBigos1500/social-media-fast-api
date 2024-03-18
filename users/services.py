@@ -1,11 +1,14 @@
 from sqlalchemy.orm import Session
 
 from users.models import User, Profile
-from users.schemas import UserCreate
+
 
 def get_user(db: Session, email: str) -> User:
     return db.query(User).filter(User.email == email).first()
 
+
+def get_user_by_id(db: Session, id: int) -> User:
+    return db.query(User).filter(User.id == id).first()
 
 
 def store_profile(db: Session, userId: User, payload):
