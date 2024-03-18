@@ -42,8 +42,8 @@ def get_all_friends(
             or_(
                 (FriendAssociation.user_id == user.id)
                 & (FriendAssociation.friend_id == fid),
-                (FriendAssociation.user_id == user.id)
-                & (FriendAssociation.friend_id == fid),
+                (FriendAssociation.user_id == fid)
+                & (FriendAssociation.friend_id == user.id),
             )
         )
         .first()
@@ -57,8 +57,8 @@ def add_friend(
     db: Session = Depends(get_db),
     user=Depends(get_current_user),
 ):
-    new_friend = db.query(User).get(payload.friend_id) 
-  
+    new_friend = db.query(User).get(payload.friend_id)
+
     friend = friend_data(db, user.id, payload.friend_id)
 
     if friend is None:

@@ -11,7 +11,7 @@ from auth.schemas import Token
 from auth.services import authenticate_user, create_user_account
 
 from users.services import store_profile
-from users.schemas import UserCreate, GetUser
+from users.schemas import UserCreate, UserProfile
 from users.models import User
 
 from core.config import get_settings
@@ -66,6 +66,6 @@ async def login_for_access_token(
     )
 
 
-@router.get("/user/", response_model=GetUser)
+@router.get("/user/", status_code=status.HTTP_200_OK, response_model=UserProfile)
 async def read_user_me(user=Depends(get_current_user)):
     return user

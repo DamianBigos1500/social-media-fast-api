@@ -1,6 +1,6 @@
 import datetime
 from typing import List
-from pydantic import BaseModel
+from pydantic import BaseModel, computed_field
 from users.schemas import GetUser
 
 
@@ -31,9 +31,20 @@ class GetPost(PostBase):
     attachments: List[PostAttachmentBase]
     creator: GetUser
     created_at: datetime.datetime
-    comments_length: int | None = None
+    comments: List[PostCommentBase] = None
+
+    @computed_field
+    @property
+    def comments_length(self) -> int:
+        return len(self.comments)
 
 
 class CreateComment(BaseModel):
     post_id: int
     content: str
+
+
+class UserComments(PostCommentBase):
+    pass
+    # post_id: int
+    post: GetPost | None

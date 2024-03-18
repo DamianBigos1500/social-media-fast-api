@@ -9,8 +9,10 @@ from post.models import Post, PostAttachment, PostComment
 from post.schemas import CreateComment
 
 
-def get_all_posts(db: Session):
-    return db.query(Post).order_by(desc(Post.id)).all()
+def get_all_posts(db: Session, page: int = 1):
+    return (
+        db.query(Post).order_by(desc(Post.id)).offset((page - 1) * 10).limit(10).all()
+    )
 
 
 def create_new_post(db: Session, content: str | None, creator_id: int):
@@ -24,6 +26,11 @@ def create_new_post(db: Session, content: str | None, creator_id: int):
 
 def get_post_by_id(db: Session, pid: str):
     post = db.query(Post).filter(Post.id == pid).first()
+    return post
+
+
+def get_profile_posts(db: Session, pid: str):
+    post = db.query(Post).filter(Post.creator_id == pid).all()
     return post
 
 
@@ -68,14 +75,16 @@ def create_attachment(db: Session, path, post_id):
     return attachment
 
 
-def get_comments_by_post_id(db: Session, post_id):
-    post_comments = (
+def get_comments_by_post_id(db: Session, post_id, hide):
+    query = (
         db.query(PostComment)
         .filter(PostComment.post_id == post_id)
         .order_by(desc(PostComment.created_at))
-        .all()
     )
-    return post_comments
+    if hide:
+        query = query.limit(2)
+
+    return query.all()
 
 
 def create_post_comment(db: Session, payload: CreateComment, user_id):
@@ -100,6 +109,15 @@ def delete_post_comment_by_id(db: Session, cid, userId):
     return post_comment
 
 
+def get_comments_by_user_id(db: Session, uid):
+    user_comments = db.query(PostComment).filter((PostComment.user_id == uid)).all()
+    db.commit()
+    return user_comments
+
+
+# BOOKMARKS
+
+
 def add_bookmark_user(db: Session, pid, user):
     post = db.query(Post).filter(Post.id == pid).first()
     if (post is not None) and (post not in user.bookmarks):
@@ -108,3 +126,12 @@ def add_bookmark_user(db: Session, pid, user):
         db.commit()
 
     return user
+
+
+def remove_bookmark_user(db: Session, pid, user):
+    post = db.query(Post).filter(Post.id == pid).first()
+
+    if post in user.bookmarks:
+        user.bookmarks.remove(post)
+        db.add(user)
+        db.commit()

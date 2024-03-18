@@ -5,7 +5,7 @@ from fastapi import APIRouter, UploadFile, status, Depends
 from sqlalchemy.orm import Session
 
 from users.schemas import UserList, UserProfile
-from users.models import User, ProfileConstrains
+from users.models import Profile, User, ProfileConstrains
 
 from core.security import get_current_user
 from core.database import get_db
@@ -22,8 +22,8 @@ router = APIRouter(
 
 
 @router.get("/", status_code=status.HTTP_200_OK, response_model=List[UserList])
-def friends_proposal(db: Session = Depends(get_db)):
-    users = db.query(User).all()
+def friends_proposal(db: Session = Depends(get_db), user=Depends(get_current_user)):
+    users = db.query(User).filter(User.id != user.id).all()
     return users
 
 
@@ -37,14 +37,14 @@ def get_user_profile(uid: int, db: Session = Depends(get_db)):
 
 @router.post("/update-profile-image/")
 async def update_profile_image(
-    file: UploadFile,
+    profile_file: UploadFile,
     db: Session = Depends(get_db),
     user=Depends(get_current_user),
 ):
     upload_dir = f"{settings.IMAGEDIR}user_image/"
-    file.filename = f"{uuid.uuid4()}.jpg"
-    upload_file = f"{upload_dir}{file.filename}"
-    contents = await file.read()
+    profile_file.filename = f"{uuid.uuid4()}.jpg"
+    upload_file = f"{upload_dir}{profile_file.filename}"
+    contents = await profile_file.read()
 
     if not os.path.exists(upload_dir):
         os.makedirs(upload_dir)
@@ -60,7 +60,34 @@ async def update_profile_image(
     return upload_file
 
 
-@router.patch("/profile/{uid}", status_code=status.HTTP_200_OK,response_model=UserProfile)
+@router.post("/update-cover-image/")
+async def update_profile_image(
+    cover_file: UploadFile,
+    db: Session = Depends(get_db),
+    user=Depends(get_current_user),
+):
+    upload_dir = f"{settings.IMAGEDIR}user_image_cover/"
+    cover_file.filename = f"{uuid.uuid4()}.jpg"
+    upload_file = f"{upload_dir}{cover_file.filename}"
+    contents = await cover_file.read()
+
+    if not os.path.exists(upload_dir):
+        os.makedirs(upload_dir)
+
+    # save file
+    with open(upload_file, "wb") as f:
+        f.write(contents)
+
+    auth_user = db.query(Profile).filter_by(user_id=user.id).first()
+    auth_user.cover_image = upload_file
+    db.commit()
+
+    return upload_file
+
+
+@router.patch(
+    "/profile/{uid}", status_code=status.HTTP_200_OK, response_model=UserProfile
+)
 def get_user_profile(
     uid: int,
     db: Session = Depends(get_db),
@@ -71,5 +98,5 @@ def get_user_profile(
 
     if not constrains.show_birth_day:
         profile_data.profile.birth_day = None
-    
+
     return profile_data
