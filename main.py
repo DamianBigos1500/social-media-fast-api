@@ -1,11 +1,12 @@
 from typing import List
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
-from fastapi.responses import JSONResponse
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+
 
 from api.routes import router as api_router
-
 from core.database import Base, engine
 
 
@@ -37,7 +38,9 @@ origins = [
     "http://localhost:4000",
     "https://localhost.4200",
     "http://localhost",
+    "http://localhost",
     "http://localhost:8080",
+    "http://daravix.smarthost.pl/",
 ]
 
 app.add_middleware(
@@ -54,9 +57,9 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(api_router)
 
 
-@app.get("/")
-def health_check():
-    return JSONResponse(content={"status": "Running!"})
+# @app.get("/")
+# def health_check():
+#     return JSONResponse(content={"status": "Running!"})
 
 
 class ConnectionManager:
@@ -92,3 +95,11 @@ async def websocket_end(websocket: WebSocket, client_id: int):
     except WebSocketDisconnect:
         manager.disconnect(websocket)
         await manager.broadcast(f"Client {client_id} left chat")
+
+
+templates = Jinja2Templates(directory="templates")
+
+
+@app.get("/{full_path:path}", response_class=HTMLResponse)
+async def read_item(request: Request, full_path: str):
+    return templates.TemplateResponse(request=request, name="index.html")

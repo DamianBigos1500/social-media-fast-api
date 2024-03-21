@@ -37,7 +37,7 @@ def create_post(payload: UserCreate, db: Session = Depends(get_db)):
             status_code=422, detail="Email is already registered with us."
         )
     user = create_user_account(db, payload)
-    profile = store_profile(db, user.id)
+    profile = store_profile(db, user.id, payload)
 
     return "Succesfully registered"
 

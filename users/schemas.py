@@ -22,6 +22,10 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     password: str
+    phone_number: str
+    birth_day: str
+    birth_month: str
+    birth_year: str
 
 
 class GetUser(UserBase):
